@@ -1,48 +1,49 @@
-# ProjetoBalcaoOfertasAPI
+# BalcÃ£o de Ofertas â€” API
 
-Arquitetura e Organização do Projeto
-Padrão de Arquitetura : O projeto atual foi desenvolvido sem seguir nenhum padrão de arquitetura específico. Seria possível implementar um padrão de arquitetura, como a arquitetura em planos (por exemplo, MVC ou Clean Architecture), para separar claramente as responsabilidades e facilitar a manutenção.
+API REST em .NET 7 simulando um **balcÃ£o de ofertas de moedas/ativos**: usuÃ¡rios criam ofertas de compra e venda a partir do saldo disponÃ­vel em sua carteira, e o sistema valida lastro antes de registrar.
 
-Camadas : Dividir o projeto em camadas distintas (como Controladores, Serviços, Repositórios) torna o código mais organizado e permite melhor separação de preocupações.
+![.NET](https://img.shields.io/badge/.NET-7.0-512BD4?logo=dotnet&logoColor=white)
+![EF Core](https://img.shields.io/badge/EF%20Core-7-512BD4?logo=dotnet&logoColor=white)
+![SQL Server](https://img.shields.io/badge/SQL%20Server-CC2927?logo=microsoftsqlserver&logoColor=white)
+![Swagger](https://img.shields.io/badge/docs-Swagger-85EA2D?logo=swagger&logoColor=black)
 
-Injeção de Dependência : Utilizando um container de injeção de dependência (por exemplo, o built-in do ASP.NET Core) para gerenciar as dependências entre as classes, tornando o código mais desacoplado e facilitando a substituição de implementações.
+## Stack
 
-Tratamento de Exceções : Implementar um middleware global para tratamento de confiança ajudaria a capturar e lidar com erros de forma consistente em toda a aplicação.
+- **.NET 7** Â· ASP.NET Core Web API
+- **Entity Framework Core 7** Â· SQL Server
+- **Swagger / OpenAPI** (`Swashbuckle.AspNetCore`)
+- Scripts SQL versionados em `ScriptsDB/`
 
-Validação de Dados : Implemente uma camada de validação para garantir que os dados enviados nas requisições estejam corretos antes de receber o processamento.
+## DomÃ­nio
 
-segurança
-Autenticação e Autorização : Implementar um mecanismo de autenticação e autorização para proteger os endpoints sensíveis e restringir o acesso apenas a usuários autenticados e autorizados.
+| Entidade | Papel |
+|---|---|
+| `Usuario` | Participante do balcÃ£o |
+| `Carteira` | Saldo do usuÃ¡rio por moeda |
+| `Moeda` | Ativos negociÃ¡veis |
+| `Oferta` | Ordem de compra ou venda, vinculada a usuÃ¡rio + carteira |
 
-Tráfego Seguro (HTTPS) : Certifique-se de que a API esteja configurada para usar HTTPS para proteger a comunicação entre os clientes e o servidor.
+Ao criar uma oferta, a API valida que a carteira do usuÃ¡rio pertence a ele **e** possui saldo suficiente (`PreÃ§o Ã— Quantidade`). ExclusÃ£o lÃ³gica via flag `Deletado`.
 
-Desempenho e Escalabilidade
-Paginação Eficiente : Melhorar o mecanismo de paginação para lidar com grandes pesos de dados, permitindo carregar apenas um subconjunto de registros por página.
+## Endpoints principais
 
-Caching : Implementar caching para evitar consultas frequentes ao banco de dados para dados estáticos ou que possam mudar.
+```
+GET    /api/ofertas        # lista ofertas ativas, ordenadas por data de criaÃ§Ã£o (desc)
+POST   /api/ofertas        # cria nova oferta (valida carteira + saldo)
+```
 
-Indexação de Banco de Dados : Certifique-se de que as colunas usadas em consultas frequentes sejam indexadas para melhorar o desempenho.
+DocumentaÃ§Ã£o completa via Swagger em `https://localhost:<porta>/swagger`.
 
-Escalabilidade Horizontal : Planejar uma arquitetura para permitir uma escalabilidade horizontal, caso a demanda do sistema aumente no futuro.
+## Como rodar
 
-Melhorias no Código
-Tratamento de Erros Mais Descritivos : Melhorar a qualidade das mensagens de erros retornadas pela API, fornecendo informações mais descritivas sobre o problema ocorrido.
+```bash
+dotnet restore
+dotnet ef database update       # cria/atualiza schema
+dotnet run
+```
 
-Logging : Implementar um mecanismo de logging para registrar eventos importantes do sistema, facilitando o monitoramento e solução de problemas.
+Connection string em `appsettings.json`. Scripts de bootstrap do banco em `ScriptsDB/`.
 
-Modelagem de Dados Mais Robusta : Avaliar a necessidade de adicionar mais campos ou tabelas para atender a requisitos futuros, como histórico de transações, status de ofertas etc.
+## Status
 
-Documentação
-Swagger : Embora o Swagger já tenha sido configurado na API, seria interessante adicionar mais detalhes às estruturas dos endpoints, parâmetros, respostas e modelos para facilitar o uso e entendimento da API pelos desenvolvedores.
-
-README : Além das informações básicas do projeto, incluem detalhes sobre a configuração do ambiente de desenvolvimento, instruções para execução, testes e como implementar a API em produção.
-
-testes
-Testes Automatizados : Implementar testes automatizados (unitários e de integração) para garantir a qualidade e confiabilidade do código.
-
-Testes de Carga : Realizar testes de carga para avaliar o desempenho da API sob diferentes cargas de requisições.
-
-Considerações sobre Cloud
-Escalabilidade na Nuvem : Avaliar a possibilidade de hospedar a aplicação em uma infraestrutura de nuvem (por exemplo, AWS, Azure ou Google Cloud) para facilitar a escalabilidade sob demanda.
-
-Balanceamento de Carga : Utilizando recursos de balanceamento de carga para distribuir as requisições entre várias instâncias da aplicação.
+ExercÃ­cio de API REST com EF Core â€” domÃ­nio pequeno mas com validaÃ§Ãµes de negÃ³cio nÃ£o-triviais (lastro de carteira). Base para evoluir com autenticaÃ§Ã£o JWT, tratamento global de exceÃ§Ã£o via middleware, paginaÃ§Ã£o e testes automatizados.
